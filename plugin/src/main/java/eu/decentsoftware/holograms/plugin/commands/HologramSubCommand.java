@@ -29,12 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-@CommandInfo(
-		permissions = "dh.command.holograms",
-		usage = "/dh holograms help",
-		description = "All commands for editing holograms.",
-		aliases = {"hologram", "holo", "h"}
-)
+@CommandInfo(permissions = "dh.command.holograms", usage = "/dh holograms help", description = "All commands for editing holograms.", aliases = {
+		"hologram", "holo", "h" })
 public class HologramSubCommand extends DecentCommand {
 
 	public HologramSubCommand() {
@@ -64,6 +60,8 @@ public class HologramSubCommand extends DecentCommand {
 		addSubCommand(new HologramUpdateRangeSub());
 		addSubCommand(new HologramUpdateIntervalSub());
 		addSubCommand(new HologramRenameSub());
+		addSubCommand(new HologramTextShadowSub());
+		addSubCommand(new HologramTransparentSub());
 	}
 
 	@Override
@@ -85,47 +83,37 @@ public class HologramSubCommand extends DecentCommand {
 	}
 
 	/*
-	 *  SubCommands
+	 * SubCommands
 	 */
 
-    @CommandInfo(
-            permissions = "dh.command.holograms.update",
-            usage = "/dh hologram update <hologram>",
-            description = "Update a Hologram.",
-            minArgs = 1
-    )
-    public static class HologramUpdateSub extends DecentCommand {
+	@CommandInfo(permissions = "dh.command.holograms.update", usage = "/dh hologram update <hologram>", description = "Update a Hologram.", minArgs = 1)
+	public static class HologramUpdateSub extends DecentCommand {
 
-        public HologramUpdateSub() {
-            super("update");
-        }
+		public HologramUpdateSub() {
+			super("update");
+		}
 
-        @Override
-        public CommandHandler getCommandHandler() {
-            return (sender, args) -> {
-                Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
-                if (hologram.isEnabled()) {
-                    hologram.hideAll();
-                    hologram.showAll();
-                }
-                Lang.HOLOGRAM_UPDATED.send(sender);
-                return true;
-            };
-        }
+		@Override
+		public CommandHandler getCommandHandler() {
+			return (sender, args) -> {
+				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
+				if (hologram.isEnabled()) {
+					hologram.hideAll();
+					hologram.showAll();
+				}
+				Lang.HOLOGRAM_UPDATED.send(sender);
+				return true;
+			};
+		}
 
-        @Override
-        public TabCompleteHandler getTabCompleteHandler() {
-            return TabCompleteHandler.HOLOGRAM_NAMES;
-        }
+		@Override
+		public TabCompleteHandler getTabCompleteHandler() {
+			return TabCompleteHandler.HOLOGRAM_NAMES;
+		}
 
-    }
+	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.align",
-			usage = "/dh hologram align <hologram> <X|Y|Z|XZ|FACE> <otherHologram>",
-			description = "Align hologram with other hologram on a specified axis or its facing angle.",
-			minArgs = 3
-	)
+	@CommandInfo(permissions = "dh.command.holograms.align", usage = "/dh hologram align <hologram> <X|Y|Z|XZ|FACE> <otherHologram>", description = "Align hologram with other hologram on a specified axis or its facing angle.", minArgs = 3)
 	public static class HologramAlignSub extends DecentCommand {
 
 		public HologramAlignSub() {
@@ -170,7 +158,7 @@ public class HologramSubCommand extends DecentCommand {
 				hologram.setLocation(location);
 				hologram.realignLines();
 				hologram.save();
-				
+
 				Lang.HOLOGRAM_ALIGNED.send(sender);
 				return true;
 			};
@@ -180,7 +168,8 @@ public class HologramSubCommand extends DecentCommand {
 		public TabCompleteHandler getTabCompleteHandler() {
 			return (sender, args) -> {
 				if (args.length == 1 || args.length == 3) {
-					return TabCompleteHandler.getPartialMatches(args[0], PLUGIN.getHologramManager().getHologramNames());
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
 				} else if (args.length == 2) {
 					return TabCompleteHandler.getPartialMatches(args[1], "X", "Y", "Z", "XZ", "FACE", "FACING");
 				}
@@ -190,12 +179,7 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.center",
-			usage = "/dh hologram center <hologram>",
-			description = "Move a Hologram into the center of a block.",
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.center", usage = "/dh hologram center <hologram>", description = "Move a Hologram into the center of a block.", minArgs = 1)
 	public static class HologramCenterSub extends DecentCommand {
 
 		public HologramCenterSub() {
@@ -229,13 +213,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.clone",
-			usage = "/dh hologram clone <hologram> <name> [temp] [-l:<world:x:y:z>]",
-			description = "Clone an existing Hologram.",
-			aliases = {"copy"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.clone", usage = "/dh hologram clone <hologram> <name> [temp] [-l:<world:x:y:z>]", description = "Clone an existing Hologram.", aliases = {
+			"copy" }, minArgs = 2)
 	public static class HologramCloneSub extends DecentCommand {
 
 		public HologramCloneSub() {
@@ -281,7 +260,8 @@ public class HologramSubCommand extends DecentCommand {
 				} else {
 					if (location == null) {
 						final Player player = (Player) sender;
-						location = Settings.HOLOGRAMS_EYE_LEVEL_POSITIONING ? player.getEyeLocation() : player.getLocation();
+						location = Settings.HOLOGRAMS_EYE_LEVEL_POSITIONING ? player.getEyeLocation()
+								: player.getLocation();
 					}
 				}
 
@@ -302,13 +282,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.create",
-			usage = "/dh hologram create <name> [-l:world:x:y:z] [--center] [content]",
-			description = "Create new Hologram.",
-			aliases = {"new", "c"},
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.create", usage = "/dh hologram create <name> [-l:world:x:y:z] [--center] [content]", description = "Create new Hologram.", aliases = {
+			"new", "c" }, minArgs = 1)
 	public static class HologramCreateSub extends DecentCommand {
 
 		public HologramCreateSub() {
@@ -328,19 +303,19 @@ public class HologramSubCommand extends DecentCommand {
 					Lang.HOLOGRAM_ALREADY_EXISTS.send(sender, hologramName);
 					return true;
 				}
-				
+
 				Location location = null;
 				boolean centerHologram = false;
-				
+
 				List<String> contentArgs = new ArrayList<>();
-				
+
 				// Iterate through the args to find -l:<world>:<x>:<y>:<z> and/or --center.
 				// If found, set values and skip arg, else add arg to content List.
 				for (int i = 1; i < args.length; i++) {
 					if (args[i].toLowerCase(Locale.ROOT).startsWith("-l:")) {
 						String locationString = args[i].substring(3);
 						location = LocationUtils.asLocation(locationString);
-						
+
 						// Valid Location, skip this arg.
 						if (location != null)
 							continue;
@@ -348,19 +323,20 @@ public class HologramSubCommand extends DecentCommand {
 						centerHologram = true;
 						continue;
 					}
-					
+
 					contentArgs.add(args[i]);
 				}
-				
+
 				if (!(sender instanceof Player) && location == null) {
 					Lang.ONLY_PLAYER.send(sender);
 					return true;
 				} else {
 					if (location == null) {
 						final Player player = (Player) sender;
-						location = Settings.HOLOGRAMS_EYE_LEVEL_POSITIONING ? player.getEyeLocation() : player.getLocation();
+						location = Settings.HOLOGRAMS_EYE_LEVEL_POSITIONING ? player.getEyeLocation()
+								: player.getLocation();
 					}
-					
+
 					if (centerHologram) {
 						int x = (int) location.getX();
 						int z = (int) location.getZ();
@@ -391,11 +367,12 @@ public class HologramSubCommand extends DecentCommand {
 		@Override
 		public TabCompleteHandler getTabCompleteHandler() {
 			return (sender, args) -> {
-				if (args.length == 3 && (args[1].startsWith("#ICON:") || args[1].startsWith("#HEAD:") || args[1].startsWith("#SMALLHEAD:"))) {
+				if (args.length == 3 && (args[1].startsWith("#ICON:") || args[1].startsWith("#HEAD:")
+						|| args[1].startsWith("#SMALLHEAD:"))) {
 					return TabCompleteHandler.getPartialMatches(args[2], Arrays.stream(Material.values())
-						.filter(DecentMaterial::isItem)
-						.map(Material::name)
-						.collect(Collectors.toList()));
+							.filter(DecentMaterial::isItem)
+							.map(Material::name)
+							.collect(Collectors.toList()));
 				} else if (args.length == 3 && args[1].startsWith("#ENTITY:")) {
 					return TabCompleteHandler.getPartialMatches(args[2], DecentEntityType.getAllowedEntityTypeNames());
 				}
@@ -405,13 +382,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.delete",
-			usage = "/dh hologram delete <hologram>",
-			description = "Delete a Hologram.",
-			aliases = {"del", "remove", "rem"},
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.delete", usage = "/dh hologram delete <hologram>", description = "Delete a Hologram.", aliases = {
+			"del", "remove", "rem" }, minArgs = 1)
 	public static class HologramDeleteSub extends DecentCommand {
 
 		public HologramDeleteSub() {
@@ -438,13 +410,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.disable",
-			usage = "/dh hologram disable <hologram>",
-			description = "Disable a hologram.",
-			aliases = {"off"},
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.disable", usage = "/dh hologram disable <hologram>", description = "Disable a hologram.", aliases = {
+			"off" }, minArgs = 1)
 	public static class HologramDisableSub extends DecentCommand {
 
 		public HologramDisableSub() {
@@ -474,13 +441,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.setdisplayrange",
-			usage = "/dh hologram setdisplayrange <hologram> <range>",
-			description = "Set display range of a hologram.",
-			aliases = {"displayrange"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.setdisplayrange", usage = "/dh hologram setdisplayrange <hologram> <range>", description = "Set display range of a hologram.", aliases = {
+			"displayrange" }, minArgs = 2)
 	public static class HologramDisplayRangeSub extends DecentCommand {
 
 		public HologramDisplayRangeSub() {
@@ -490,11 +452,12 @@ public class HologramSubCommand extends DecentCommand {
 		@Override
 		public CommandHandler getCommandHandler() {
 			return (sender, args) -> {
-				final int range = Validator.getInteger(args[1], 1, 64, "Range must be a valid number between 1 and 64.");
+				final int range = Validator.getInteger(args[1], 1, 64,
+						"Range must be a valid number between 1 and 64.");
 				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				hologram.setDisplayRange(range);
 				hologram.save();
-				
+
 				Lang.HOLOGRAM_DISPLAY_RANGE_SET.send(sender, range);
 				return true;
 			};
@@ -507,13 +470,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.downorigin",
-			usage = "/dh hologram downorigin <hologram> <true|false>",
-			description = "Set down origin state of the hologram.",
-			aliases = {"setdownorigin"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.downorigin", usage = "/dh hologram downorigin <hologram> <true|false>", description = "Set down origin state of the hologram.", aliases = {
+			"setdownorigin" }, minArgs = 2)
 	public static class HologramDownOriginSub extends DecentCommand {
 
 		public HologramDownOriginSub() {
@@ -528,7 +486,7 @@ public class HologramSubCommand extends DecentCommand {
 				hologram.setDownOrigin(value);
 				hologram.realignLines();
 				hologram.save();
-				
+
 				Lang.HOLOGRAM_DOWN_ORIGIN_SET.send(sender, value);
 				return true;
 			};
@@ -538,7 +496,8 @@ public class HologramSubCommand extends DecentCommand {
 		public TabCompleteHandler getTabCompleteHandler() {
 			return (sender, args) -> {
 				if (args.length == 1 || args.length == 3) {
-					return TabCompleteHandler.getPartialMatches(args[0], PLUGIN.getHologramManager().getHologramNames());
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
 				} else if (args.length == 2) {
 					return TabCompleteHandler.getPartialMatches(args[1], "true", "false");
 				}
@@ -548,13 +507,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.enable",
-			usage = "/dh hologram enable <hologram>",
-			description = "Enable a hologram.",
-			aliases = {"on"},
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.enable", usage = "/dh hologram enable <hologram>", description = "Enable a hologram.", aliases = {
+			"on" }, minArgs = 1)
 	public static class HologramEnableSub extends DecentCommand {
 
 		public HologramEnableSub() {
@@ -584,13 +538,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.setfacing",
-			usage = "/dh hologram setfacing <hologram> <facing>",
-			description = "Set facing direction of a hologram.",
-			aliases = {"facing", "setface", "face"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.setfacing", usage = "/dh hologram setfacing <hologram> <facing>", description = "Set facing direction of a hologram.", aliases = {
+			"facing", "setface", "face" }, minArgs = 2)
 	public static class HologramFacingSub extends DecentCommand {
 
 		public HologramFacingSub() {
@@ -603,17 +552,26 @@ public class HologramSubCommand extends DecentCommand {
 				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				float facing;
 				switch (args[1].toUpperCase()) {
-					case "SOUTH": facing = 0.0f; break;
-					case "WEST": facing = 90.0f; break;
-					case "NORTH": facing = 180.0f; break;
-					case "EAST": facing = -90.0f; break;
+					case "SOUTH":
+						facing = 0.0f;
+						break;
+					case "WEST":
+						facing = 90.0f;
+						break;
+					case "NORTH":
+						facing = 180.0f;
+						break;
+					case "EAST":
+						facing = -90.0f;
+						break;
 					default:
-						facing = Validator.getFloat(args[1], -180.0f, 180.0f, "Facing must be a valid number between -180 and 180.");
+						facing = Validator.getFloat(args[1], -180.0f, 180.0f,
+								"Facing must be a valid number between -180 and 180.");
 						break;
 				}
 				hologram.setFacing(facing);
 				hologram.save();
-				
+
 				hologram.realignLines();
 				Lang.HOLOGRAM_FACING_SET.send(sender, facing);
 				return true;
@@ -624,9 +582,11 @@ public class HologramSubCommand extends DecentCommand {
 		public TabCompleteHandler getTabCompleteHandler() {
 			return (sender, args) -> {
 				if (args.length == 1 || args.length == 3) {
-					return TabCompleteHandler.getPartialMatches(args[0], PLUGIN.getHologramManager().getHologramNames());
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
 				} else if (args.length == 2) {
-					return TabCompleteHandler.getPartialMatches(args[1], "NORTH", "EAST", "SOUTH", "WEST", "0", "45", "90", "135", "180", "-45", "-90", "-135");
+					return TabCompleteHandler.getPartialMatches(args[1], "NORTH", "EAST", "SOUTH", "WEST", "0", "45",
+							"90", "135", "180", "-45", "-90", "-135");
 				}
 				return null;
 			};
@@ -634,12 +594,60 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.addflag",
-			usage = "/dh hologram addflag <hologram> <flag>",
-			description = "Add a flag to Hologram.",
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.textshadow", usage = "/dh hologram textshadow <hologram> <true|false>", description = "Toggle text shadow on all lines in a hologram (1.19.4+ only).", aliases = {
+			"shadow" }, minArgs = 2)
+	public static class HologramTextShadowSub extends DecentCommand {
+
+		public HologramTextShadowSub() {
+			super("textshadow");
+		}
+
+		@Override
+		public CommandHandler getCommandHandler() {
+			return (sender, args) -> {
+				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
+				final String value = args[1].toLowerCase(Locale.ROOT);
+				boolean enabled;
+				switch (value) {
+					case "true":
+					case "on":
+					case "yes":
+					case "enable":
+						enabled = true;
+						break;
+					case "false":
+					case "off":
+					case "no":
+					case "disable":
+						enabled = false;
+						break;
+					default:
+						Common.tell(sender, Common.PREFIX + "&cValue must be 'true' or 'false'.");
+						return true;
+				}
+				hologram.setTextShadow(enabled);
+				hologram.save();
+				Lang.HOLOGRAM_TEXTSHADOW_SET.send(sender, enabled ? "enabled" : "disabled");
+				return true;
+			};
+		}
+
+		@Override
+		public TabCompleteHandler getTabCompleteHandler() {
+			return (sender, args) -> {
+				if (args.length == 1) {
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
+				} else if (args.length == 2) {
+					return TabCompleteHandler.getPartialMatches(args[1], "true", "false");
+				}
+				return null;
+			};
+		}
+
+	}
+
+	@CommandInfo(permissions = "dh.command.holograms.addflag", usage = "/dh hologram addflag <hologram> <flag>", description = "Add a flag to Hologram.", minArgs = 2)
 	public static class HologramFlagAddSub extends DecentCommand {
 
 		public HologramFlagAddSub() {
@@ -663,11 +671,12 @@ public class HologramSubCommand extends DecentCommand {
 		public TabCompleteHandler getTabCompleteHandler() {
 			return (sender, args) -> {
 				if (args.length == 1) {
-					return TabCompleteHandler.getPartialMatches(args[0], PLUGIN.getHologramManager().getHologramNames());
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
 				} else if (args.length == 2) {
 					return TabCompleteHandler.getPartialMatches(args[1], Arrays.stream(EnumFlag.values())
-						.map(EnumFlag::name)
-						.collect(Collectors.toList()));
+							.map(EnumFlag::name)
+							.collect(Collectors.toList()));
 				}
 				return null;
 			};
@@ -675,13 +684,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.removeflag",
-			usage = "/dh hologram removeflag <hologram> <flag>",
-			description = "Remove a flag from Hologram.",
-			aliases = {"remflag"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.removeflag", usage = "/dh hologram removeflag <hologram> <flag>", description = "Remove a flag from Hologram.", aliases = {
+			"remflag" }, minArgs = 2)
 	public static class HologramFlagRemoveSub extends DecentCommand {
 
 		public HologramFlagRemoveSub() {
@@ -705,11 +709,12 @@ public class HologramSubCommand extends DecentCommand {
 		public TabCompleteHandler getTabCompleteHandler() {
 			return (sender, args) -> {
 				if (args.length == 1) {
-					return TabCompleteHandler.getPartialMatches(args[0], PLUGIN.getHologramManager().getHologramNames());
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
 				} else if (args.length == 2) {
 					return TabCompleteHandler.getPartialMatches(args[1], Arrays.stream(EnumFlag.values())
-						.map(EnumFlag::name)
-						.collect(Collectors.toList()));
+							.map(EnumFlag::name)
+							.collect(Collectors.toList()));
 				}
 				return null;
 			};
@@ -717,12 +722,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.help",
-			usage = "/dh hologram help",
-			description = "Show help for holograms",
-			aliases = {"?"}
-	)
+	@CommandInfo(permissions = "dh.command.holograms.help", usage = "/dh hologram help", description = "Show help for holograms", aliases = {
+			"?" })
 	public static class HologramHelpSub extends DecentCommand {
 
 		public HologramHelpSub() {
@@ -749,12 +750,7 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.info",
-			usage = "/dh hologram info <hologram>",
-			description = "Show info about a Hologram.",
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.info", usage = "/dh hologram info <hologram>", description = "Show info about a Hologram.", minArgs = 1)
 	public static class HologramInfoSub extends DecentCommand {
 
 		public HologramInfoSub() {
@@ -785,13 +781,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.lines",
-			usage = "/dh hologram lines <hologram> <page> [listPage]",
-			description = "Lists all lines in a hologram.",
-			aliases = {"line", "l"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.lines", usage = "/dh hologram lines <hologram> <page> [listPage]", description = "Lists all lines in a hologram.", aliases = {
+			"line", "l" }, minArgs = 2)
 	public static class HologramLinesSub extends DecentCommand {
 
 		public HologramLinesSub() {
@@ -816,9 +807,12 @@ public class HologramSubCommand extends DecentCommand {
 
 				final int itemsPerPage = 15;
 				final int itemsTotal = page.size();
-				final int maxPage = itemsTotal % itemsPerPage == 0 ? itemsTotal / itemsPerPage - 1 : itemsTotal / itemsPerPage;
-				int currentPage = args.length >= 3 ? Validator.getInteger(args[2], "Page must be a valid integer.") - 1 : 0;
-				if (currentPage > maxPage) currentPage = maxPage;
+				final int maxPage = itemsTotal % itemsPerPage == 0 ? itemsTotal / itemsPerPage - 1
+						: itemsTotal / itemsPerPage;
+				int currentPage = args.length >= 3 ? Validator.getInteger(args[2], "Page must be a valid integer.") - 1
+						: 0;
+				if (currentPage > maxPage)
+					currentPage = maxPage;
 				final int startIndex = currentPage * itemsPerPage;
 				final int endIndex = Math.min(startIndex + itemsPerPage, itemsTotal);
 				final String itemFormat = "   %d. %s";
@@ -828,7 +822,8 @@ public class HologramSubCommand extends DecentCommand {
 					if (Validator.isPlayer(sender)) {
 						String suggest = String.format("/dh l set %s %s %s", args[0], i + 1, line.getContent());
 						String message = String.format(itemFormat, i + 1, line.getContent());
-						String hoverFormat = Common.colorize(Lang.LINE_EDIT_HOVER.getValue().replace("{prefix}", Common.PREFIX));
+						String hoverFormat = Common
+								.colorize(Lang.LINE_EDIT_HOVER.getValue().replace("{prefix}", Common.PREFIX));
 						String hover = String.format(hoverFormat, suggest);
 						Message.sendHoverSuggest((Player) sender, message, hover, suggest);
 					} else {
@@ -839,8 +834,7 @@ public class HologramSubCommand extends DecentCommand {
 				sender.sendMessage("");
 				if (maxPage > 0) {
 					((Player) sender).spigot().sendMessage(Message.getPagesComponents(currentPage,
-							maxPage == currentPage, "/dh h lines " + args[0] + " " + pageIndex + " %d")
-					);
+							maxPage == currentPage, "/dh h lines " + args[0] + " " + pageIndex + " %d"));
 					sender.sendMessage("");
 				}
 				return true;
@@ -854,14 +848,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.movehere",
-			usage = "/dh hologram movehere <hologram>",
-			description = "Move a Hologram to yourself.",
-			aliases = {"mvhr"},
-			playerOnly = true,
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.movehere", usage = "/dh hologram movehere <hologram>", description = "Move a Hologram to yourself.", aliases = {
+			"mvhr" }, playerOnly = true, minArgs = 1)
 	public static class HologramMovehereSub extends DecentCommand {
 
 		public HologramMovehereSub() {
@@ -873,7 +861,8 @@ public class HologramSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				Player player = Validator.getPlayer(sender);
-				Location playerLocation = Settings.HOLOGRAMS_EYE_LEVEL_POSITIONING ? player.getEyeLocation() : player.getLocation();
+				Location playerLocation = Settings.HOLOGRAMS_EYE_LEVEL_POSITIONING ? player.getEyeLocation()
+						: player.getLocation();
 				Location location = hologram.getLocation();
 				location.setWorld(playerLocation.getWorld());
 				location.setX(playerLocation.getX());
@@ -882,7 +871,7 @@ public class HologramSubCommand extends DecentCommand {
 				hologram.setLocation(location);
 				hologram.realignLines();
 				hologram.save();
-				
+
 				Lang.HOLOGRAM_MOVED.send(sender);
 				return true;
 			};
@@ -895,13 +884,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.move",
-			usage = "/dh hologram move <hologram> <x> <y> <z>",
-			description = "Move Hologram to a Location.",
-			aliases = {"mv"},
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.holograms.move", usage = "/dh hologram move <hologram> <x> <y> <z>", description = "Move Hologram to a Location.", aliases = {
+			"mv" }, minArgs = 4)
 	public static class HologramMoveSub extends DecentCommand {
 
 		public HologramMoveSub() {
@@ -934,7 +918,8 @@ public class HologramSubCommand extends DecentCommand {
 				Hologram hologram;
 				Location location;
 				if (args.length == 1) {
-					return TabCompleteHandler.getPartialMatches(args[0], PLUGIN.getHologramManager().getHologramNames());
+					return TabCompleteHandler.getPartialMatches(args[0],
+							PLUGIN.getHologramManager().getHologramNames());
 				} else if (args.length == 2 && Validator.isPlayer(sender)) {
 					hologram = PLUGIN.getHologramManager().getHologram(args[0]);
 					location = hologram == null ? null : hologram.getLocation();
@@ -963,13 +948,7 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.near",
-			usage = "/dh hologram near <range>",
-			description = "List of holograms near you.",
-			playerOnly = true,
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.near", usage = "/dh hologram near <range>", description = "List of holograms near you.", playerOnly = true, minArgs = 1)
 	public static class HologramNearSub extends DecentCommand {
 
 		public HologramNearSub() {
@@ -998,14 +977,14 @@ public class HologramSubCommand extends DecentCommand {
 				int range = Validator.getIntegerInRange(
 						Validator.getInteger(args[0], "Range must be a valid integer."),
 						1, 1000,
-						"Range must be a valid integer between 1 and 1000."
-				);
+						"Range must be a valid integer between 1 and 1000.");
 				Location playerLocation = player.getLocation();
 
 				List<Hologram> nearHolograms = Lists.newArrayList();
 				for (Hologram hologram : PLUGIN.getHologramManager().getHolograms()) {
 					Location hologramLocation = hologram.getLocation();
-					if (hologramLocation.getWorld().equals(playerLocation.getWorld()) && hologramLocation.distanceSquared(playerLocation) <= (range * range)) {
+					if (hologramLocation.getWorld().equals(playerLocation.getWorld())
+							&& hologramLocation.distanceSquared(playerLocation) <= (range * range)) {
 						nearHolograms.add(hologram);
 					}
 				}
@@ -1025,8 +1004,7 @@ public class HologramSubCommand extends DecentCommand {
 								loc.getWorld().getName(),
 								loc.getX(),
 								loc.getY(),
-								loc.getZ()
-						);
+								loc.getZ());
 					}
 					player.sendMessage("");
 				}
@@ -1041,13 +1019,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.setpermission",
-			usage = "/dh hologram setpermission <hologram> [permission]",
-			description = "Set hologram permission.",
-			aliases = {"permission", "setperm", "perm"},
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.setpermission", usage = "/dh hologram setpermission <hologram> [permission]", description = "Set hologram permission.", aliases = {
+			"permission", "setperm", "perm" }, minArgs = 1)
 	public static class HologramPermissionSub extends DecentCommand {
 
 		public HologramPermissionSub() {
@@ -1077,14 +1050,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.teleport",
-			usage = "/dh hologram teleport <hologram>",
-			description = "Teleport to a Hologram.",
-			playerOnly = true,
-			aliases = {"tp", "tele"},
-			minArgs = 1
-	)
+	@CommandInfo(permissions = "dh.command.holograms.teleport", usage = "/dh hologram teleport <hologram>", description = "Teleport to a Hologram.", playerOnly = true, aliases = {
+			"tp", "tele" }, minArgs = 1)
 	public static class HologramTeleportSub extends DecentCommand {
 
 		public HologramTeleportSub() {
@@ -1110,13 +1077,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.setupdateinterval",
-			usage = "/dh hologram setupdateinterval <hologram> <interval>",
-			description = "Set update interval of a hologram.",
-			aliases = {"updateinterval"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.setupdateinterval", usage = "/dh hologram setupdateinterval <hologram> <interval>", description = "Set update interval of a hologram.", aliases = {
+			"updateinterval" }, minArgs = 2)
 	public static class HologramUpdateIntervalSub extends DecentCommand {
 
 		public HologramUpdateIntervalSub() {
@@ -1126,11 +1088,12 @@ public class HologramSubCommand extends DecentCommand {
 		@Override
 		public CommandHandler getCommandHandler() {
 			return (sender, args) -> {
-				final int interval = Validator.getInteger(args[1], 1, 1200, "Interval must be a valid number between 1 and 1200.");
+				final int interval = Validator.getInteger(args[1], 1, 1200,
+						"Interval must be a valid number between 1 and 1200.");
 				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				hologram.setUpdateInterval(interval);
 				hologram.save();
-				
+
 				Lang.HOLOGRAM_UPDATE_INTERVAL_SET.send(sender, interval);
 				return true;
 			};
@@ -1143,13 +1106,8 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.setupdaterange",
-			usage = "/dh hologram setupdaterange <hologram> <range>",
-			description = "Set update range of a hologram.",
-			aliases = {"updaterange"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.setupdaterange", usage = "/dh hologram setupdaterange <hologram> <range>", description = "Set update range of a hologram.", aliases = {
+			"updaterange" }, minArgs = 2)
 	public static class HologramUpdateRangeSub extends DecentCommand {
 
 		public HologramUpdateRangeSub() {
@@ -1159,11 +1117,12 @@ public class HologramSubCommand extends DecentCommand {
 		@Override
 		public CommandHandler getCommandHandler() {
 			return (sender, args) -> {
-				final int range = Validator.getInteger(args[1], 1, 64, "Range must be a valid number between 1 and 64.");
+				final int range = Validator.getInteger(args[1], 1, 64,
+						"Range must be a valid number between 1 and 64.");
 				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				hologram.setUpdateRange(range);
 				hologram.save();
-				
+
 				Lang.HOLOGRAM_UPDATE_RANGE_SET.send(sender, range);
 				return true;
 			};
@@ -1176,12 +1135,7 @@ public class HologramSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.holograms.rename",
-			usage = "/dh hologram rename <hologram> <new_name>",
-			description = "Rename a hologram.",
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.holograms.rename", usage = "/dh hologram rename <hologram> <new_name>", description = "Rename a hologram.", minArgs = 2)
 	public static class HologramRenameSub extends DecentCommand {
 
 		public HologramRenameSub() {
@@ -1219,6 +1173,48 @@ public class HologramSubCommand extends DecentCommand {
 		@Override
 		public TabCompleteHandler getTabCompleteHandler() {
 			return TabCompleteHandler.HOLOGRAM_NAMES;
+		}
+
+	}
+
+	@CommandInfo(permissions = "dh.command.holograms.transparent", usage = "/dh hologram transparent <hologram> <true|false>", description = "Set transparent background for all lines in a hologram.", aliases = {
+			"transparency" }, minArgs = 2)
+	public static class HologramTransparentSub extends DecentCommand {
+
+		public HologramTransparentSub() {
+			super("transparent");
+		}
+
+		@Override
+		public CommandHandler getCommandHandler() {
+			return (sender, args) -> {
+				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
+				final String value = args[1].toLowerCase(Locale.ROOT);
+
+				if (!value.equals("true") && !value.equals("false")) {
+					Lang.HOLOGRAM_DOWN_ORIGIN_DOES_NOT_EXIST.send(sender);
+					return false;
+				}
+
+				final boolean transparent = value.equals("true");
+				hologram.setTransparent(transparent);
+				hologram.save();
+
+				Lang.HOLOGRAM_TRANSPARENT_SET.send(sender, transparent ? "enabled" : "disabled");
+				return true;
+			};
+		}
+
+		@Override
+		public TabCompleteHandler getTabCompleteHandler() {
+			return (sender, args) -> {
+				if (args.length == 1) {
+					return TabCompleteHandler.getPartialMatches(args[0], Hologram.getCachedHologramNames());
+				} else if (args.length == 2) {
+					return Lists.newArrayList("true", "false");
+				}
+				return null;
+			};
 		}
 
 	}

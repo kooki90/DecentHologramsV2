@@ -29,19 +29,15 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@CommandInfo(
-		permissions = "dh.command.lines",
-		usage = "/dh lines help",
-		description = "All commands for editing hologram lines.",
-		aliases = {"line", "l"}
-)
+@CommandInfo(permissions = "dh.command.lines", usage = "/dh lines help", description = "All commands for editing hologram lines.", aliases = {
+		"line", "l" })
 public class LineSubCommand extends DecentCommand {
-	
+
 	private static final List<String> items = Arrays.stream(Material.values())
-		.filter(DecentMaterial::isItem)
-		.map(Material::name)
-		.collect(Collectors.toList());
-	
+			.filter(DecentMaterial::isItem)
+			.map(Material::name)
+			.collect(Collectors.toList());
+
 	public LineSubCommand() {
 		super("lines");
 
@@ -61,6 +57,7 @@ public class LineSubCommand extends DecentCommand {
 		addSubCommand(new LineFlagRemoveSub());
 		addSubCommand(new LinePermissionSub());
 		addSubCommand(new LineFacingSub());
+		addSubCommand(new LineTextShadowSub());
 	}
 
 	@Override
@@ -82,16 +79,11 @@ public class LineSubCommand extends DecentCommand {
 	}
 
 	/*
-	 *  SubCommands
+	 * SubCommands
 	 */
 
-	@CommandInfo(
-			permissions = "dh.command.lines.add",
-			usage = "/dh line add <hologram> <page> [content]",
-			description = "Add a line to Hologram.",
-			aliases = {"append"},
-			minArgs = 2
-	)
+	@CommandInfo(permissions = "dh.command.lines.add", usage = "/dh line add <hologram> <page> [content]", description = "Add a line to Hologram.", aliases = {
+			"append" }, minArgs = 2)
 	static class LineAddSub extends DecentCommand {
 
 		public LineAddSub() {
@@ -103,7 +95,10 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				String content = args.length > 2 ? sender instanceof Player ? Validator.getLineContent((Player) sender, args, 2) : Validator.getLineContent(args, 2) : Settings.DEFAULT_TEXT;
+				String content = args.length > 2
+						? sender instanceof Player ? Validator.getLineContent((Player) sender, args, 2)
+								: Validator.getLineContent(args, 2)
+						: Settings.DEFAULT_TEXT;
 				HologramLine line = new HologramLine(page, page.getNextLineLocation(), content);
 				if (page.addLine(line)) {
 					hologram.save();
@@ -127,12 +122,7 @@ public class LineSubCommand extends DecentCommand {
 		}
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.align",
-			usage = "/dh line align <hologram> <page> <line1> <line2> <X|Z|XZ|FACE>",
-			description = "Align two lines in hologram on a specified axis or its facing angle.",
-			minArgs = 5
-	)
+	@CommandInfo(permissions = "dh.command.lines.align", usage = "/dh line align <hologram> <page> <line1> <line2> <X|Z|XZ|FACE>", description = "Align two lines in hologram on a specified axis or its facing angle.", minArgs = 5)
 	static class LineAlignSub extends DecentCommand {
 
 		public LineAlignSub() {
@@ -190,21 +180,15 @@ public class LineSubCommand extends DecentCommand {
 				} else if (args.length == 5) {
 					return TabCompleteHandler.getPartialMatches(args[4], "X", "Z", "XZ");
 				}
-				
+
 				return Collections.emptyList();
 			};
 		}
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.edit",
-			usage = "/dh line edit <hologram> <page> <line>",
-			description = "Edit a line.",
-			aliases = {"e"},
-			playerOnly = true,
-			minArgs = 3
-	)
+	@CommandInfo(permissions = "dh.command.lines.edit", usage = "/dh line edit <hologram> <page> <line>", description = "Edit a line.", aliases = {
+			"e" }, playerOnly = true, minArgs = 3)
 	static class LineEditSub extends DecentCommand {
 
 		public LineEditSub() {
@@ -216,11 +200,13 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 
 				String suggest = String.format("/dh l set %s %s %s %s", args[0], args[1], args[2], line.getContent());
 				String message = Common.colorize(Lang.LINE_EDIT.getValue().replace("{prefix}", Common.PREFIX));
-				String hoverFormat = Common.colorize(Lang.LINE_EDIT_HOVER.getValue().replace("{prefix}", Common.PREFIX));
+				String hoverFormat = Common
+						.colorize(Lang.LINE_EDIT_HOVER.getValue().replace("{prefix}", Common.PREFIX));
 				String hover = String.format(hoverFormat, suggest);
 				sender.sendMessage("");
 				Message.sendHoverSuggest((Player) sender, message, hover, suggest);
@@ -236,12 +222,7 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.addflag",
-			usage = "/dh line addflag <hologram> <page> <line> <flag>",
-			description = "Add a flag to line.",
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.addflag", usage = "/dh line addflag <hologram> <page> <line> <flag>", description = "Add a flag to line.", minArgs = 4)
 	static class LineFlagAddSub extends DecentCommand {
 
 		public LineFlagAddSub() {
@@ -253,9 +234,11 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 
-				EnumFlag flag = Validator.getFlag(args[3], String.format("%s&cFlag \"%s\" wasn't found.", Common.PREFIX, args[2]));
+				EnumFlag flag = Validator.getFlag(args[3],
+						String.format("%s&cFlag \"%s\" wasn't found.", Common.PREFIX, args[2]));
 				if (line != null) {
 					line.addFlags(flag);
 					hologram.save();
@@ -280,12 +263,7 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.removeflag",
-			usage = "/dh line removeflag <hologram> <page> <line> <flag>",
-			description = "Remove a flag from line.",
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.removeflag", usage = "/dh line removeflag <hologram> <page> <line> <flag>", description = "Remove a flag from line.", minArgs = 4)
 	static class LineFlagRemoveSub extends DecentCommand {
 
 		public LineFlagRemoveSub() {
@@ -297,9 +275,11 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 
-				EnumFlag flag = Validator.getFlag(args[3], String.format("%s&cFlag \"%s\" wasn't found.", Common.PREFIX, args[2]));
+				EnumFlag flag = Validator.getFlag(args[3],
+						String.format("%s&cFlag \"%s\" wasn't found.", Common.PREFIX, args[2]));
 				if (line != null) {
 					line.removeFlags(flag);
 					hologram.save();
@@ -324,13 +304,8 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.height",
-			usage = "/dh line height <hologram> <page> <line> <height>",
-			description = "Set height of a line.",
-			aliases = {"setheight"},
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.height", usage = "/dh line height <hologram> <page> <line> <height>", description = "Set height of a line.", aliases = {
+			"setheight" }, minArgs = 4)
 	static class LineHeightSub extends DecentCommand {
 
 		public LineHeightSub() {
@@ -342,11 +317,12 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 				if (line != null) {
 					line.setHeight(Validator.getDouble(args[3], 0.0D, 2.5D,
-							String.format("Height must be a valid number in range. (Min: %.2f, Max: %.2f)", 0.0D, 2.5D)
-					));
+							String.format("Height must be a valid number in range. (Min: %.2f, Max: %.2f)", 0.0D,
+									2.5D)));
 					hologram.realignLines();
 					hologram.save();
 
@@ -364,19 +340,15 @@ public class LineSubCommand extends DecentCommand {
 				if (args.length <= 3) {
 					return handleCommonArgs(args);
 				}
-				
+
 				return Collections.emptyList();
 			};
 		}
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.help",
-			usage = "/dh line help",
-			description = "Show help for lines.",
-			aliases = {"?"}
-	)
+	@CommandInfo(permissions = "dh.command.lines.help", usage = "/dh line help", description = "Show help for lines.", aliases = {
+			"?" })
 	static class LineHelpSub extends DecentCommand {
 
 		public LineHelpSub() {
@@ -403,12 +375,7 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.info",
-			usage = "/dh line info <hologram> <page> <line>",
-			description = "Show info about line.",
-			minArgs = 3
-	)
+	@CommandInfo(permissions = "dh.command.lines.info", usage = "/dh line info <hologram> <page> <line>", description = "Show info about line.", minArgs = 3)
 	static class LineInfoSub extends DecentCommand {
 
 		public LineInfoSub() {
@@ -431,8 +398,7 @@ public class LineSubCommand extends DecentCommand {
 				Common.tell(sender, " &8• &7Hologram: &b%s", hologram.getName());
 				Common.tell(sender, " &8• &7Index: &b%d", index);
 				Common.tell(sender, " &8• &7Location: &b%s, %.2f, %.2f, %.2f",
-						loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ()
-				);
+						loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
 				sender.sendMessage(Common.colorize(" &8• &7Content: &b") + line.getContent());
 				Common.tell(sender, " &8• &7Height: &b%f", line.getHeight());
 				Common.tell(sender, " &8• &7OffsetX: &b%f", line.getOffsetX());
@@ -450,12 +416,7 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.insert",
-			usage = "/dh line insert <hologram> <page> <line> [content]",
-			description = "Insert a line into Hologram.",
-			minArgs = 3
-	)
+	@CommandInfo(permissions = "dh.command.lines.insert", usage = "/dh line insert <hologram> <page> <line> [content]", description = "Insert a line into Hologram.", minArgs = 3)
 	static class LineInsertSub extends DecentCommand {
 
 		public LineInsertSub() {
@@ -469,7 +430,10 @@ public class LineSubCommand extends DecentCommand {
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
 				int index = Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue());
 				HologramLine prevLine = Validator.getHologramLine(page, index);
-				String content = args.length > 3 ? sender instanceof Player ? Validator.getLineContent((Player) sender, args, 3) : Validator.getLineContent(args, 3) : Settings.DEFAULT_TEXT;
+				String content = args.length > 3
+						? sender instanceof Player ? Validator.getLineContent((Player) sender, args, 3)
+								: Validator.getLineContent(args, 3)
+						: Settings.DEFAULT_TEXT;
 				HologramLine line = new HologramLine(page, prevLine.getLocation().clone(), content);
 
 				if (page.insertLine(index - 1, line)) {
@@ -495,13 +459,8 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.offsetx",
-			usage = "/dh line offsetX <hologram> <page> <line> <offset>",
-			description = "Set an X offset of a line.",
-			aliases = {"xoffset", "offx", "xoff"},
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.offsetx", usage = "/dh line offsetX <hologram> <page> <line> <offset>", description = "Set an X offset of a line.", aliases = {
+			"xoffset", "offx", "xoff" }, minArgs = 4)
 	static class LineOffsetXSub extends DecentCommand {
 
 		public LineOffsetXSub() {
@@ -513,11 +472,12 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 				if (line != null) {
 					line.setOffsetX(Validator.getDouble(args[3], -2.5D, 2.5D,
-							String.format("OffsetX must be a valid number in range. (Min: %.2f, Max: %.2f)", -2.5D, 2.5D)
-					));
+							String.format("OffsetX must be a valid number in range. (Min: %.2f, Max: %.2f)", -2.5D,
+									2.5D)));
 					page.realignLines();
 					hologram.save();
 					Lang.LINE_OFFSETX_SET.send(sender);
@@ -535,13 +495,8 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.offsetz",
-			usage = "/dh line offsetZ <hologram> <page> <line> <offset>",
-			description = "Set an Z offset of a line.",
-			aliases = {"zoffset", "offz", "zoff"},
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.offsetz", usage = "/dh line offsetZ <hologram> <page> <line> <offset>", description = "Set an Z offset of a line.", aliases = {
+			"zoffset", "offz", "zoff" }, minArgs = 4)
 	static class LineOffsetZSub extends DecentCommand {
 
 		public LineOffsetZSub() {
@@ -553,11 +508,12 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 				if (line != null) {
 					line.setOffsetZ(Validator.getDouble(args[3], -2.5D, 2.5D,
-							String.format("OffsetZ must be a valid number in range. (Min: %.2f, Max: %.2f)", -2.5D, 2.5D)
-					));
+							String.format("OffsetZ must be a valid number in range. (Min: %.2f, Max: %.2f)", -2.5D,
+									2.5D)));
 					page.realignLines();
 					hologram.save();
 					Lang.LINE_OFFSETZ_SET.send(sender);
@@ -575,13 +531,8 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.setpermission",
-			usage = "/dh line setpermission <hologram> <page> <line> [permission]",
-			description = "Set line permission.",
-			aliases = {"permission", "setperm", "perm"},
-			minArgs = 3
-	)
+	@CommandInfo(permissions = "dh.command.lines.setpermission", usage = "/dh line setpermission <hologram> <page> <line> [permission]", description = "Set line permission.", aliases = {
+			"permission", "setperm", "perm" }, minArgs = 3)
 	static class LinePermissionSub extends DecentCommand {
 
 		public LinePermissionSub() {
@@ -593,7 +544,8 @@ public class LineSubCommand extends DecentCommand {
 			return (sender, args) -> {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 				if (line != null) {
 					if (args.length >= 4) {
 						line.setPermission(args[3]);
@@ -617,13 +569,8 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.remove",
-			usage = "/dh line remove <hologram> <page> <line>",
-			description = "Remove a line from Hologram.",
-			aliases = {"rm", "rem", "del", "delete"},
-			minArgs = 3
-	)
+	@CommandInfo(permissions = "dh.command.lines.remove", usage = "/dh line remove <hologram> <page> <line>", description = "Remove a line from Hologram.", aliases = {
+			"rm", "rem", "del", "delete" }, minArgs = 3)
 	static class LineRemoveSub extends DecentCommand {
 
 		public LineRemoveSub() {
@@ -657,12 +604,7 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.set",
-			usage = "/dh line set <hologram> <page> <line> <content>",
-			description = "Set a line in Hologram.",
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.set", usage = "/dh line set <hologram> <page> <line> <content>", description = "Set a line in Hologram.", minArgs = 4)
 	static class LineSetSub extends DecentCommand {
 
 		public LineSetSub() {
@@ -675,7 +617,8 @@ public class LineSubCommand extends DecentCommand {
 				Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
 				HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
 				int index = Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue());
-				String content = sender instanceof Player ? Validator.getLineContent((Player) sender, args, 3) : Validator.getLineContent(args, 3);
+				String content = sender instanceof Player ? Validator.getLineContent((Player) sender, args, 3)
+						: Validator.getLineContent(args, 3);
 				if (page.setLine(index - 1, content)) {
 					page.realignLines();
 					hologram.save();
@@ -700,12 +643,7 @@ public class LineSubCommand extends DecentCommand {
 
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.swap",
-			usage = "/dh line swap <hologram> <page> <line1> <line2>",
-			description = "Swap two lines in a Hologram.",
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.swap", usage = "/dh line swap <hologram> <page> <line1> <line2>", description = "Swap two lines in a Hologram.", minArgs = 4)
 	static class LineSwapSub extends DecentCommand {
 
 		public LineSwapSub() {
@@ -745,13 +683,8 @@ public class LineSubCommand extends DecentCommand {
 		}
 	}
 
-	@CommandInfo(
-			permissions = "dh.command.lines.setfacing",
-			usage = "/dh line setfacing <hologram> <page> <line> <facing>",
-			description = "Set facing direction of a line.",
-			aliases = {"facing", "setface", "face"},
-			minArgs = 4
-	)
+	@CommandInfo(permissions = "dh.command.lines.setfacing", usage = "/dh line setfacing <hologram> <page> <line> <facing>", description = "Set facing direction of a line.", aliases = {
+			"facing", "setface", "face" }, minArgs = 4)
 	public static class LineFacingSub extends DecentCommand {
 
 		public LineFacingSub() {
@@ -762,16 +695,27 @@ public class LineSubCommand extends DecentCommand {
 		public CommandHandler getCommandHandler() {
 			return (sender, args) -> {
 				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
-				final HologramPage page = Validator.getHologramPage(hologram, args[1], Lang.PAGE_DOES_NOT_EXIST.getValue());
-				final HologramLine line = Validator.getHologramLine(page, Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				final HologramPage page = Validator.getHologramPage(hologram, args[1],
+						Lang.PAGE_DOES_NOT_EXIST.getValue());
+				final HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
 				float facing;
 				switch (args[3].toUpperCase()) {
-					case "SOUTH": facing = 0.0f; break;
-					case "WEST": facing = 90.0f; break;
-					case "NORTH": facing = 180.0f; break;
-					case "EAST": facing = -90.0f; break;
+					case "SOUTH":
+						facing = 0.0f;
+						break;
+					case "WEST":
+						facing = 90.0f;
+						break;
+					case "NORTH":
+						facing = 180.0f;
+						break;
+					case "EAST":
+						facing = -90.0f;
+						break;
 					default:
-						facing = Validator.getFloat(args[3], -180.0f, 180.0f, "Facing must be a valid number between -180 and 180.");
+						facing = Validator.getFloat(args[3], -180.0f, 180.0f,
+								"Facing must be a valid number between -180 and 180.");
 						break;
 				}
 				line.setFacing(facing);
@@ -794,11 +738,66 @@ public class LineSubCommand extends DecentCommand {
 		}
 	}
 
+	@CommandInfo(permissions = "dh.command.lines.textshadow", usage = "/dh line textshadow <hologram> <page> <line> <true|false>", description = "Toggle text shadow on a line (1.19.4+ only).", aliases = {
+			"shadow" }, minArgs = 4)
+	public static class LineTextShadowSub extends DecentCommand {
+
+		public LineTextShadowSub() {
+			super("textshadow");
+		}
+
+		@Override
+		public CommandHandler getCommandHandler() {
+			return (sender, args) -> {
+				final Hologram hologram = Validator.getHologram(args[0], Lang.HOLOGRAM_DOES_NOT_EXIST.getValue());
+				final HologramPage page = Validator.getHologramPage(hologram, args[1],
+						Lang.PAGE_DOES_NOT_EXIST.getValue());
+				final HologramLine line = Validator.getHologramLine(page,
+						Validator.getInteger(args[2], Lang.LINE_DOES_NOT_EXIST.getValue()));
+				final String value = args[3].toLowerCase(Locale.ROOT);
+				boolean enabled;
+				switch (value) {
+					case "true":
+					case "on":
+					case "yes":
+					case "enable":
+						enabled = true;
+						break;
+					case "false":
+					case "off":
+					case "no":
+					case "disable":
+						enabled = false;
+						break;
+					default:
+						Common.tell(sender, Common.PREFIX + "&cValue must be 'true' or 'false'.");
+						return true;
+				}
+				line.setTextShadow(enabled);
+				hologram.save();
+				Lang.LINE_TEXTSHADOW_SET.send(sender, enabled ? "enabled" : "disabled");
+				return true;
+			};
+		}
+
+		@Override
+		public TabCompleteHandler getTabCompleteHandler() {
+			return (sender, args) -> {
+				if (args.length <= 3) {
+					return handleCommonArgs(args);
+				} else {
+					return TabCompleteHandler.getPartialMatches(args[3], "true", "false");
+				}
+			};
+		}
+	}
+
 	/*
-	 *	Utility Methods
+	 * Utility Methods
 	 */
-	
-	// Utility method to handle all "/dh <subcommand> <hologram> <page> <line>" stuff
+
+	// Utility method to handle all "/dh <subcommand> <hologram> <page> <line>"
+	// stuff
 	protected static List<String> handleCommonArgs(String[] args) {
 		if (args.length == 1) {
 			return getHologramNames(args[0]);
@@ -807,14 +806,14 @@ public class LineSubCommand extends DecentCommand {
 		} else if (args.length == 3) {
 			return getLines(args[0], Validator.getInteger(args[1]), args[2]);
 		}
-		
+
 		return Collections.emptyList();
 	}
-	
+
 	protected static List<String> getHologramNames(String token) {
 		return TabCompleteHandler.getPartialMatches(token, PLUGIN.getHologramManager().getHologramNames());
 	}
-	
+
 	protected static List<String> getContent(String[] args) {
 		if (args.length == 1 && args[0].startsWith("#")) {
 			return TabCompleteHandler.getPartialMatches(args[0], "#ICON: ", "#HEAD: ", "#SMALLHEAD: ", "#ENTITY: ");
@@ -831,8 +830,8 @@ public class LineSubCommand extends DecentCommand {
 			String item = args[1].toUpperCase(Locale.ROOT);
 			if (args[2].startsWith("(") && (item.contains("HEAD") || item.contains("SKULL"))) {
 				List<String> names = Bukkit.getOnlinePlayers().stream()
-					.map(player -> "(" + player.getName() + ")")
-					.collect(Collectors.toList());
+						.map(player -> "(" + player.getName() + ")")
+						.collect(Collectors.toList());
 
 				if (Integration.PLACEHOLDER_API.isAvailable()) {
 					names.add("(%player_name%)");
@@ -843,43 +842,46 @@ public class LineSubCommand extends DecentCommand {
 
 				return TabCompleteHandler.getPartialMatches(args[args.length - 1], names);
 			}
-			
+
 			String lastArg = args[args.length - 1];
-			if ("!ENCHANTED".regionMatches(true, 0, lastArg, 0, lastArg.length()) && args[0].toUpperCase(Locale.ROOT).startsWith("#ICON:")) {
+			if ("!ENCHANTED".regionMatches(true, 0, lastArg, 0, lastArg.length())
+					&& args[0].toUpperCase(Locale.ROOT).startsWith("#ICON:")) {
 				return Collections.singletonList("!ENCHANTED");
 			}
 		}
 		return Collections.emptyList();
 	}
-	
+
 	protected static List<String> getPages(String hologramName, String token) {
 		Hologram hologram = PLUGIN.getHologramManager().getHologram(hologramName);
 		if (hologram != null) {
 			return TabCompleteHandler.getPartialMatches(token, IntStream
-				.rangeClosed(1, hologram.size())
-				.boxed().map(String::valueOf)
-				.collect(Collectors.toList()));
+					.rangeClosed(1, hologram.size())
+					.boxed().map(String::valueOf)
+					.collect(Collectors.toList()));
 		}
-		
+
 		return Collections.emptyList();
 	}
-	
+
 	protected static List<String> getLines(String hologramName, int pageIndex, String token) {
 		Hologram hologram = PLUGIN.getHologramManager().getHologram(hologramName);
-		if (hologram == null) return Collections.emptyList();
+		if (hologram == null)
+			return Collections.emptyList();
 		HologramPage page = hologram.getPage(pageIndex - 1);
 		if (page != null) {
 			return TabCompleteHandler.getPartialMatches(token, IntStream
-				.rangeClosed(1, page.size())
-				.boxed().map(String::valueOf)
-				.collect(Collectors.toList()));
+					.rangeClosed(1, page.size())
+					.boxed().map(String::valueOf)
+					.collect(Collectors.toList()));
 		}
-		
+
 		return Collections.emptyList();
 	}
-	
+
 	protected static List<String> getFlags(String token) {
-		return TabCompleteHandler.getPartialMatches(token, Arrays.stream(EnumFlag.values()).map(Enum::name).collect(Collectors.toList()));
+		return TabCompleteHandler.getPartialMatches(token,
+				Arrays.stream(EnumFlag.values()).map(Enum::name).collect(Collectors.toList()));
 	}
 
 }

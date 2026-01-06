@@ -53,16 +53,19 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     private static final DecentHolograms DECENT_HOLOGRAMS = DecentHologramsAPI.get();
 
     /*
-     *	Hologram Cache
+     * Hologram Cache
      */
 
     /**
-     * This map contains all cached holograms. This map is used to get holograms by name.
+     * This map contains all cached holograms. This map is used to get holograms by
+     * name.
      * <p>
-     * Holograms are cached when they are loaded from files or created. They are removed
+     * Holograms are cached when they are loaded from files or created. They are
+     * removed
      * from the cache when they are deleted.
      * <p>
-     * Holograms, that are only in this map and not in the {@link HologramManager}, are not
+     * Holograms, that are only in this map and not in the {@link HologramManager},
+     * are not
      * editable via commands. They are only editable via the API.
      *
      * @see #getCachedHologram(String)
@@ -93,12 +96,13 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	Static Methods
+     * Static Methods
      */
 
     @SuppressWarnings("unchecked")
     @NonNull
-    public static Hologram fromFile(final @NotNull String filePath) throws LocationParseException, IllegalArgumentException {
+    public static Hologram fromFile(final @NotNull String filePath)
+            throws LocationParseException, IllegalArgumentException {
         Hologram hologram = null;
         try {
             final FileConfig config = new FileConfig(DECENT_HOLOGRAMS.getPlugin(), "holograms/" + filePath);
@@ -141,6 +145,12 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
             if (config.isBoolean("down-origin")) {
                 hologram.setDownOrigin(config.getBoolean("down-origin", Settings.DEFAULT_DOWN_ORIGIN));
             }
+            if (config.isBoolean("text-shadow")) {
+                hologram.textShadow = config.getBoolean("text-shadow", false);
+            }
+            if (config.isBoolean("transparent")) {
+                hologram.transparent = config.getBoolean("transparent", false);
+            }
 
             if (!config.contains("pages") && config.contains("lines")) {
                 // Old Config
@@ -148,7 +158,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
                 Set<String> keysLines = config.getConfigurationSection("lines").getKeys(false);
                 for (int j = 1; j <= keysLines.size(); j++) {
                     String path = "lines." + j;
-                    HologramLine line = HologramLine.fromFile(config.getConfigurationSection(path), page, page.getNextLineLocation());
+                    HologramLine line = HologramLine.fromFile(config.getConfigurationSection(path), page,
+                            page.getNextLineLocation());
                     page.addLine(line);
                 }
                 config.set("lines", null);
@@ -194,7 +205,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
                         } catch (Exception ignored) {
                             // Ignore
                         }
-                        if (values == null) continue;
+                        if (values == null)
+                            continue;
                         HologramLine line = HologramLine.fromMap(values, page, page.getNextLineLocation());
                         page.addLine(line);
                     }
@@ -211,15 +223,15 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	Fields
+     * Fields
      */
 
     /**
      * The lock used to synchronize the saving process of this hologram.
      *
      * @implNote This lock is used to prevent multiple threads from saving
-     * the same hologram at the same time. This is important because the
-     * saving process is not thread-safe in SnakeYAML.
+     *           the same hologram at the same time. This is important because the
+     *           saving process is not thread-safe in SnakeYAML.
      * @since 2.7.10
      */
     protected final Lock lock = new ReentrantLock();
@@ -234,8 +246,9 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
      * due to the update process.
      *
      * @implNote This lock is used to prevent multiple threads from modifying
-     * the visibility of the same hologram at the same time. This is important
-     * because the visibility of a hologram is not thread-safe.
+     *           the visibility of the same hologram at the same time. This is
+     *           important
+     *           because the visibility of a hologram is not thread-safe.
      * @since 2.7.11
      */
     protected final Object visibilityMutex = new Object();
@@ -250,15 +263,18 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     protected final List<HologramPage> pages = new ArrayList<>();
     protected boolean downOrigin = Settings.DEFAULT_DOWN_ORIGIN;
     protected boolean alwaysFacePlayer = false;
+    protected boolean textShadow = false;
+    protected boolean transparent = false;
     private final AtomicInteger tickCounter;
     private final List<NmsClickableHologramRenderer> clickableHologramRenderers = new ArrayList<>();
 
     /*
-     *	Constructors
+     * Constructors
      */
 
     /**
-     * Creates a new hologram with the given name and location. The hologram will be saved to a file.
+     * Creates a new hologram with the given name and location. The hologram will be
+     * saved to a file.
      *
      * @param name     The name of the hologram.
      * @param location The location of the hologram.
@@ -297,7 +313,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /**
-     * Creates a new hologram with the given name and location. The hologram will be saved to the given file.
+     * Creates a new hologram with the given name and location. The hologram will be
+     * saved to the given file.
      *
      * @param name     The name of the hologram.
      * @param location The location of the hologram.
@@ -328,7 +345,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
      * @param enabled    Whether the hologram should be enabled.
      * @param saveToFile Whether the hologram should be saved to a file.
      */
-    public Hologram(@NonNull String name, @NonNull Location location, @Nullable FileConfig config, boolean enabled, boolean saveToFile) {
+    public Hologram(@NonNull String name, @NonNull Location location, @Nullable FileConfig config, boolean enabled,
+            boolean saveToFile) {
         super(location);
         this.config = config;
         this.enabled = enabled;
@@ -342,7 +360,7 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	Tick
+     * Tick
      */
 
     @Override
@@ -367,7 +385,7 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	General Methods
+     * General Methods
      */
 
     @Override
@@ -392,7 +410,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /**
-     * This method disables the hologram, removes it from the {@link HologramManager},
+     * This method disables the hologram, removes it from the
+     * {@link HologramManager},
      * removes it from the cache and hides it from all players.
      */
     @Override
@@ -440,7 +459,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
         super.setFacing(facing);
 
         // Update the facing for all lines, that don't yet have a different facing set.
-        // We want to keep the hologram facing working as a "default" value, but we don't want
+        // We want to keep the hologram facing working as a "default" value, but we
+        // don't want
         // it to override custom line facing.
         for (HologramPage page : this.pages) {
             page.getLines().forEach(line -> {
@@ -453,7 +473,64 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /**
-     * Set the location of this hologram. This method doesn't update the hologram's location
+     * Get whether text shadow is enabled for this hologram.
+     *
+     * @return true if text shadow is enabled.
+     */
+    public boolean isTextShadow() {
+        return textShadow;
+    }
+
+    /**
+     * Set whether text shadow should be enabled for this hologram.
+     * This will cascade the setting to all lines in all pages.
+     * <p>
+     * Text shadow only works on Minecraft 1.19.4+ servers that support
+     * TextDisplay entities. On older versions, this setting is ignored.
+     *
+     * @param textShadow true to enable text shadow.
+     */
+    public void setTextShadow(boolean textShadow) {
+        if (this.textShadow != textShadow) {
+            this.textShadow = textShadow;
+            // Cascade to all lines in all pages
+            for (HologramPage page : this.pages) {
+                page.getLines().forEach(line -> line.setTextShadow(textShadow));
+            }
+        }
+    }
+
+    /**
+     * Get whether transparent background is enabled for this hologram.
+     *
+     * @return true if transparent background is enabled.
+     */
+    public boolean isTransparent() {
+        return transparent;
+    }
+
+    /**
+     * Set whether transparent background should be enabled for this hologram.
+     * This will cascade the setting to all lines in all pages.
+     * <p>
+     * Transparent background only works on Minecraft 1.19.4+ servers that support
+     * TextDisplay entities. On older versions, this setting is ignored.
+     *
+     * @param transparent true to enable transparent background.
+     */
+    public void setTransparent(boolean transparent) {
+        if (this.transparent != transparent) {
+            this.transparent = transparent;
+            // Cascade to all lines in all pages
+            for (HologramPage page : this.pages) {
+                page.getLines().forEach(line -> line.setTransparent(transparent));
+            }
+        }
+    }
+
+    /**
+     * Set the location of this hologram. This method doesn't update the hologram's
+     * location
      * for the players, you have to call {@link #realignLines()} for that.
      *
      * @param location The new location of this hologram.
@@ -478,7 +555,7 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
      * Save this hologram to a file asynchronously.
      *
      * @implNote Always returns true. If the hologram is not persistent,
-     * this method just doesn't do anything.
+     *           this method just doesn't do anything.
      */
     public void save() {
         if (!saveToFile) {
@@ -492,12 +569,15 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
                 config.set("location", LocationUtils.asString(getLocation(), false));
                 config.set("enabled", isEnabled());
                 config.set("permission", permission == null || permission.isEmpty() ? null : permission);
-                config.set("flags", flags.isEmpty() ? null : flags.stream().map(EnumFlag::name).collect(Collectors.toList()));
+                config.set("flags",
+                        flags.isEmpty() ? null : flags.stream().map(EnumFlag::name).collect(Collectors.toList()));
                 config.set("display-range", displayRange);
                 config.set("update-range", updateRange);
                 config.set("update-interval", updateInterval);
                 config.set("facing", facing);
                 config.set("down-origin", downOrigin);
+                config.set("text-shadow", textShadow ? true : null);
+                config.set("transparent", transparent ? true : null);
                 config.set("pages", pages.stream().map(HologramPage::serializeToMap).collect(Collectors.toList()));
                 config.saveData();
             } catch (InterruptedException e) {
@@ -514,7 +594,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
      *
      * @param name     Name of the clone.
      * @param location Location of the clone.
-     * @param temp     True if the clone should only exist until the next reload. (Won't save to file)
+     * @param temp     True if the clone should only exist until the next reload.
+     *                 (Won't save to file)
      * @return Cloned instance of this line.
      */
     public Hologram clone(@NonNull String name, @NonNull Location location, boolean temp) {
@@ -568,7 +649,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /**
-     * Handle the player quit event for this hologram. This method will hide the hologram
+     * Handle the player quit event for this hologram. This method will hide the
+     * hologram
      * from the player and remove the player from the show/hide lists.
      *
      * @param player The player that quit.
@@ -581,7 +663,7 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	Visibility Methods
+     * Visibility Methods
      */
 
     /**
@@ -678,8 +760,10 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
                 if (Version.after(8)) {
                     showPageTo(player, page, pageIndex);
                 } else {
-                    // We need to run the task later on older versions as, if we don't, it causes issues with some holograms *randomly* becoming invisible.
-                    // I *think* this is from despawning and spawning the entities (with the same ID) in the same tick.
+                    // We need to run the task later on older versions as, if we don't, it causes
+                    // issues with some holograms *randomly* becoming invisible.
+                    // I *think* this is from despawning and spawning the entities (with the same
+                    // ID) in the same tick.
                     S.sync(() -> showPageTo(player, page, pageIndex), 0L);
                 }
                 return true;
@@ -723,7 +807,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /**
-     * @param force If true, the line will be updated even if it does not need to be.
+     * @param force If true, the line will be updated even if it does not need to
+     *              be.
      * @see DHAPI#updateHologram(String)
      */
     public void updateAll(boolean force) {
@@ -861,22 +946,25 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
         }
     }
 
-
     /**
-     * Check whether the given player is in the display range of this hologram object.
+     * Check whether the given player is in the display range of this hologram
+     * object.
      *
      * @param player Given player.
-     * @return Boolean whether the given player is in the display range of this hologram object.
+     * @return Boolean whether the given player is in the display range of this
+     *         hologram object.
      */
     public boolean isInDisplayRange(@NonNull Player player) {
         return isInRange(player, displayRange);
     }
 
     /**
-     * Check whether the given player is in the update range of this hologram object.
+     * Check whether the given player is in the update range of this hologram
+     * object.
      *
      * @param player Given player.
-     * @return Boolean whether the given player is in the update range of this hologram object.
+     * @return Boolean whether the given player is in the update range of this
+     *         hologram object.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isInUpdateRange(@NonNull Player player) {
@@ -906,7 +994,7 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	Viewer Methods
+     * Viewer Methods
      */
 
     public int getPlayerPage(@NonNull Player player) {
@@ -924,7 +1012,7 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
     }
 
     /*
-     *	Pages Methods
+     * Pages Methods
      */
 
     /**
@@ -952,13 +1040,15 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
      * @see DHAPI#insertHologramPage(Hologram, int)
      */
     public HologramPage insertPage(int index) {
-        if (index < 0 || index > size()) return null;
+        if (index < 0 || index > size())
+            return null;
         HologramPage page = new HologramPage(this, index);
         pages.add(index, page);
 
         // Add 1 to indexes of all the other pages.
         pages.stream().skip(index).forEach(p -> p.setIndex(p.getIndex() + 1));
-        // Add 1 to all page indexes of current viewers, so they still see the same page.
+        // Add 1 to all page indexes of current viewers, so they still see the same
+        // page.
         viewerPages.replaceAll((uuid, integer) -> {
             if (integer > index) {
                 return integer + 1;
@@ -972,7 +1062,8 @@ public class Hologram extends UpdatingHologramObject implements ITicked {
      * @see DHAPI#getHologramPage(Hologram, int)
      */
     public HologramPage getPage(int index) {
-        if (index < 0 || index >= size()) return null;
+        if (index < 0 || index >= size())
+            return null;
         return pages.get(index);
     }
 

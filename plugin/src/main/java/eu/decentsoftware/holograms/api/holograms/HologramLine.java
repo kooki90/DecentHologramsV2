@@ -18,6 +18,7 @@ import eu.decentsoftware.holograms.nms.api.renderer.NmsHeadHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsIconHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsSmallHeadHologramRenderer;
+import eu.decentsoftware.holograms.nms.api.renderer.NmsTextDisplayHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsTextHologramRenderer;
 import eu.decentsoftware.holograms.shared.DecentPosition;
 import lombok.Getter;
@@ -49,11 +50,12 @@ public class HologramLine extends HologramObject {
     protected static final DecentHolograms DECENT_HOLOGRAMS = DecentHologramsAPI.get();
 
     /*
-     *	Static Methods
+     * Static Methods
      */
 
     @NonNull
-    public static HologramLine fromFile(@NonNull ConfigurationSection config, @Nullable HologramPage parent, @NonNull Location location) {
+    public static HologramLine fromFile(@NonNull ConfigurationSection config, @Nullable HologramPage parent,
+            @NonNull Location location) {
         HologramLine line = new HologramLine(parent, location, config.getString("content", Settings.DEFAULT_TEXT));
         if (config.isString("permission")) {
             line.setPermission(config.getString("permission", null));
@@ -73,12 +75,19 @@ public class HologramLine extends HologramObject {
         if (config.isDouble("facing")) {
             line.setFacing((float) config.getDouble("facing"));
         }
+        if (config.isBoolean("textShadow")) {
+            line.setTextShadow(config.getBoolean("textShadow"));
+        }
+        if (config.isBoolean("transparent")) {
+            line.transparent = config.getBoolean("transparent");
+        }
         return line;
     }
 
     @NonNull
     @SuppressWarnings("unchecked")
-    public static HologramLine fromMap(@NonNull Map<String, Object> map, @Nullable HologramPage parent, @NonNull Location location) {
+    public static HologramLine fromMap(@NonNull Map<String, Object> map, @Nullable HologramPage parent,
+            @NonNull Location location) {
         String content = (String) map.getOrDefault("content", Settings.DEFAULT_TEXT);
         HologramLine line = new HologramLine(parent, location, content);
         if (map.containsKey("height")) {
@@ -121,11 +130,23 @@ public class HologramLine extends HologramObject {
                 line.setFacing(((Double) facing).floatValue());
             }
         }
+        if (map.containsKey("textShadow")) {
+            Object textShadow = map.get("textShadow");
+            if (textShadow instanceof Boolean) {
+                line.setTextShadow((Boolean) textShadow);
+            }
+        }
+        if (map.containsKey("transparent")) {
+            Object transparent = map.get("transparent");
+            if (transparent instanceof Boolean) {
+                line.transparent = (Boolean) transparent;
+            }
+        }
         return line;
     }
 
     /*
-     *	Fields
+     * Fields
      */
 
     private final HologramPage parent;
@@ -138,6 +159,8 @@ public class HologramLine extends HologramObject {
     private double height;
     private String content;
     private String text;
+    private boolean textShadow = false;
+    private boolean transparent = false;
     private HologramItem item;
     private HologramEntity entity;
     private NmsHologramRenderer<?> previousRenderer;
@@ -153,11 +176,12 @@ public class HologramLine extends HologramObject {
     private volatile boolean containsPlaceholders;
 
     /*
-     *	Constructors
+     * Constructors
      */
 
     /**
-     * @see eu.decentsoftware.holograms.api.DHAPI#createHologramLine(HologramPage, Location, String)
+     * @see eu.decentsoftware.holograms.api.DHAPI#createHologramLine(HologramPage,
+     *      Location, String)
      */
     public HologramLine(@Nullable HologramPage parent, @NonNull Location location, @NotNull String content) {
         super(location);
@@ -169,7 +193,7 @@ public class HologramLine extends HologramObject {
     }
 
     /*
-     *	General Methods
+     * General Methods
      */
 
     @Override
@@ -195,6 +219,83 @@ public class HologramLine extends HologramObject {
             this.content = content == null ? "" : content;
             this.parseContent();
             this.update(true);
+        }
+    }
+
+    /**
+     * Get whether text shadow is enabled for this line.
+     *
+     * @return true if text shadow is enabled.
+     */
+    public boolean isTextShadow() {
+        return textShadow;
+    }
+
+    /**
+     * Set whether text shadow should be enabled for this line.
+     * <p>
+     * Text shadow only works on Minecraft 1.19.4+ servers that support
+     * TextDisplay entities. On older versions, this setting is ignored.
+     *
+     * @param textShadow true to enable text shadow.
+     */
+    public void setTextShadow(boolean textShadow) {
+        synchronized (renderMutex) {
+            if (this.textShadow != textShadow) {
+                this.textShadow = textShadow;
+                // Only do hide/show cycle if line has viewers (is currently displayed)
+                // For hidden pages' lines, just update the property - no entities are spawned
+                if (!viewers.isEmpty()) {
+                    // Hide ALL viewers using the OLD renderer BEFORE creating new one
+                    // This ensures old TextDisplay entities are properly removed
+                    this.hide();
+                    // Re-parse content to switch renderer if necessary
+                    this.parseContent();
+                    // Show with the new renderer
+                    this.show();
+                } else {
+                    // Just update the renderer for next time this line is shown
+                    this.parseContent();
+                }
+            }
+        }
+    }
+
+    /**
+     * Get whether transparent background is enabled for this line.
+     *
+     * @return true if transparent background is enabled.
+     */
+    public boolean isTransparent() {
+        return transparent;
+    }
+
+    /**
+     * Set whether transparent background should be enabled for this line.
+     * <p>
+     * Transparent background only works on Minecraft 1.19.4+ servers that support
+     * TextDisplay entities. On older versions, this setting is ignored.
+     *
+     * @param transparent true to enable transparent background.
+     */
+    public void setTransparent(boolean transparent) {
+        synchronized (renderMutex) {
+            if (this.transparent != transparent) {
+                this.transparent = transparent;
+                // Only do hide/show cycle if line has viewers (is currently displayed)
+                // For hidden pages' lines, just update the property - no entities are spawned
+                if (!viewers.isEmpty()) {
+                    // Hide ALL viewers using the OLD renderer BEFORE creating new one
+                    this.hide();
+                    // Re-parse content to switch renderer if necessary
+                    this.parseContent();
+                    // Show with the new renderer
+                    this.show();
+                } else {
+                    // Just update the renderer for next time this line is shown
+                    this.parseContent();
+                }
+            }
         }
     }
 
@@ -259,15 +360,29 @@ public class HologramLine extends HologramObject {
                     previousRenderer = renderer;
                     renderer = DECENT_HOLOGRAMS.getNmsAdapter().getHologramComponentFactory().createEntityRenderer();
                 }
-                NmsHologramPartData<EntityType> data = new NmsHologramPartData<>(getPositionSupplier(), () -> entity.getType());
+                NmsHologramPartData<EntityType> data = new NmsHologramPartData<>(getPositionSupplier(),
+                        () -> entity.getType());
                 height = ((NmsEntityHologramRenderer) renderer).getHeight(data);
                 setOffsetY(-(height));
             } else {
                 type = HologramLineType.TEXT;
-                if (prevType != type) {
+                if (prevType != type || needsRendererSwitch()) {
                     height = Settings.DEFAULT_HEIGHT_TEXT;
                     previousRenderer = renderer;
-                    renderer = DECENT_HOLOGRAMS.getNmsAdapter().getHologramComponentFactory().createTextRenderer();
+                    // Use TextDisplay renderer if textShadow is enabled and supported (1.19.4+)
+                    if (textShadow) {
+                        NmsTextDisplayHologramRenderer textDisplayRenderer = DECENT_HOLOGRAMS.getNmsAdapter()
+                                .getHologramComponentFactory().createTextDisplayRenderer();
+                        if (textDisplayRenderer != null) {
+                            renderer = textDisplayRenderer;
+                        } else {
+                            // Fallback to ArmorStand renderer on older versions
+                            renderer = DECENT_HOLOGRAMS.getNmsAdapter().getHologramComponentFactory()
+                                    .createTextRenderer();
+                        }
+                    } else {
+                        renderer = DECENT_HOLOGRAMS.getNmsAdapter().getHologramComponentFactory().createTextRenderer();
+                    }
                 }
                 text = parseCustomReplacements();
 
@@ -277,16 +392,37 @@ public class HologramLine extends HologramObject {
         }
     }
 
+    /**
+     * Check if renderer needs to be switched due to textShadow change.
+     */
+    private boolean needsRendererSwitch() {
+        if (type != HologramLineType.TEXT) {
+            return false;
+        }
+        boolean currentIsTextDisplay = renderer instanceof NmsTextDisplayHologramRenderer;
+        // Need switch if textShadow is enabled but not using TextDisplay, or vice versa
+        return textShadow != currentIsTextDisplay;
+    }
+
     @NonNull
     public Map<String, Object> serializeToMap() {
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("content", content);
         map.put("height", height);
-        if (!flags.isEmpty()) map.put("flags", flags.stream().map(EnumFlag::name).collect(Collectors.toList()));
-        if (permission != null && !permission.trim().isEmpty()) map.put("permission", permission);
-        if (getOffsetX() != 0.0d) map.put("offsetX", offsetX);
-        if (getOffsetZ() != 0.0d) map.put("offsetZ", offsetZ);
-        if (parent == null || getFacing() != parent.getParent().getFacing()) map.put("facing", facing);
+        if (!flags.isEmpty())
+            map.put("flags", flags.stream().map(EnumFlag::name).collect(Collectors.toList()));
+        if (permission != null && !permission.trim().isEmpty())
+            map.put("permission", permission);
+        if (getOffsetX() != 0.0d)
+            map.put("offsetX", offsetX);
+        if (getOffsetZ() != 0.0d)
+            map.put("offsetZ", offsetZ);
+        if (parent == null || getFacing() != parent.getParent().getFacing())
+            map.put("facing", facing);
+        if (textShadow)
+            map.put("textShadow", true);
+        if (transparent)
+            map.put("transparent", true);
         return map;
     }
 
@@ -304,6 +440,8 @@ public class HologramLine extends HologramObject {
         line.setOffsetX(this.getOffsetX());
         line.setOffsetZ(this.getOffsetZ());
         line.setFacing(this.getFacing());
+        line.setTextShadow(this.isTextShadow());
+        line.transparent = this.transparent;
         line.setPermission(this.getPermission());
         line.addFlags(this.getFlags().toArray(new EnumFlag[0]));
         return line;
@@ -322,7 +460,7 @@ public class HologramLine extends HologramObject {
     }
 
     /*
-     *	Visibility Methods
+     * Visibility Methods
      */
 
     @NotNull
@@ -380,8 +518,10 @@ public class HologramLine extends HologramObject {
         if (papi) {
             string = PAPI.setPlaceholders(player, string);
             if (string == null) {
-                // Some PlaceholderAPI placeholders might be replaced with null, so if the line content
-                // is just a single placeholder, there is a possibility that the line will be null. So,
+                // Some PlaceholderAPI placeholders might be replaced with null, so if the line
+                // content
+                // is just a single placeholder, there is a possibility that the line will be
+                // null. So,
                 // if that happens, replace the null with an empty string.
                 string = "";
             }
@@ -404,7 +544,8 @@ public class HologramLine extends HologramObject {
      * Check if the given player has the permission to see this line, if any.
      *
      * @param player The player.
-     * @return True, if the player has the permission to see this line, false otherwise.
+     * @return True, if the player has the permission to see this line, false
+     *         otherwise.
      */
     public boolean hasPermission(@NonNull Player player) {
         return permission == null || permission.isEmpty() || player.hasPermission(permission);
@@ -412,7 +553,8 @@ public class HologramLine extends HologramObject {
 
     /**
      * Update the visibility of this line for the given player. This method checks
-     * if the player has the permission to see this line and if they are in the display
+     * if the player has the permission to see this line and if they are in the
+     * display
      * range. Then it updates the visibility accordingly.
      *
      * @param player The player to update visibility for.
@@ -447,7 +589,13 @@ public class HologramLine extends HologramObject {
                     continue;
                 }
                 if (!isVisible(player) && canShow(player) && isInDisplayRange(player)) {
-                    renderer.display(player, getPartData(player, true, false));
+                    // Use shadow-aware and transparent display for TextDisplay renderer
+                    if (renderer instanceof NmsTextDisplayHologramRenderer) {
+                        ((NmsTextDisplayHologramRenderer) renderer).display(player, getPartData(player, true, false),
+                                textShadow, transparent);
+                    } else {
+                        renderer.display(player, getPartData(player, true, false));
+                    }
                     viewers.add(player.getUniqueId());
                 }
             }
@@ -457,7 +605,9 @@ public class HologramLine extends HologramObject {
     /**
      * Update this line for given players.
      *
-     * <p>This method will update the line only if it needs to be updated.</p>
+     * <p>
+     * This method will update the line only if it needs to be updated.
+     * </p>
      *
      * @param players Given players.
      */
@@ -468,7 +618,8 @@ public class HologramLine extends HologramObject {
     /**
      * Update this line for given players.
      *
-     * @param force   If true, the line will be updated even if it does not need to be.
+     * @param force   If true, the line will be updated even if it does not need to
+     *                be.
      * @param players Given players.
      */
     public void update(boolean force, Player... players) {
@@ -480,7 +631,13 @@ public class HologramLine extends HologramObject {
             hidePreviousIfNecessary();
             List<Player> playerList = getPlayers(true, players);
             for (Player player : playerList) {
-                if (renderer instanceof NmsTextHologramRenderer) {
+                if (renderer instanceof NmsTextDisplayHologramRenderer) {
+                    // Use shadow-aware update for TextDisplay renderer
+                    if (containsPlaceholders || containsAnimations || force) {
+                        ((NmsTextDisplayHologramRenderer) renderer).updateContent(player,
+                                getPartData(player, true, true), textShadow);
+                    }
+                } else if (renderer instanceof NmsTextHologramRenderer) {
                     updateTextIfNecessary(player, true);
                 } else if (containsPlaceholders || force) {
                     renderer.updateContent(player, getPartData(player, true, true));
@@ -543,12 +700,13 @@ public class HologramLine extends HologramObject {
     @SuppressWarnings("unchecked")
     private <T extends NmsHologramPartData<?>> T getPartData(Player player, boolean updateText, boolean cacheText) {
         Supplier<DecentPosition> positionSupplier = getPositionSupplier();
-        if (renderer instanceof NmsTextHologramRenderer) {
+        if (renderer instanceof NmsTextHologramRenderer || renderer instanceof NmsTextDisplayHologramRenderer) {
             return (T) getTextPartData(player, updateText, cacheText, positionSupplier);
         } else if (renderer instanceof NmsSmallHeadHologramRenderer
                 || renderer instanceof NmsHeadHologramRenderer
                 || renderer instanceof NmsIconHologramRenderer) {
-            return (T) new NmsHologramPartData<>(positionSupplier, () -> HologramItem.parseItemStack(item.getContent(), player));
+            return (T) new NmsHologramPartData<>(positionSupplier,
+                    () -> HologramItem.parseItemStack(item.getContent(), player));
         } else if (renderer instanceof NmsEntityHologramRenderer) {
             return (T) new NmsHologramPartData<>(positionSupplier, () -> getEntityType(player));
         }
@@ -560,9 +718,9 @@ public class HologramLine extends HologramObject {
     }
 
     private NmsHologramPartData<String> getTextPartData(Player player,
-                                                        boolean updateText,
-                                                        boolean cacheText,
-                                                        Supplier<DecentPosition> positionSupplier) {
+            boolean updateText,
+            boolean cacheText,
+            Supplier<DecentPosition> positionSupplier) {
         if (!cacheText) {
             return new NmsHologramPartData<>(positionSupplier, () -> getText(player, updateText));
         }
@@ -638,7 +796,7 @@ public class HologramLine extends HologramObject {
     }
 
     /*
-     *	Override Methods
+     * Override Methods
      */
 
     @Override

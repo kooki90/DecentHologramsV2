@@ -6,6 +6,7 @@ import eu.decentsoftware.holograms.nms.api.renderer.NmsHeadHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsHologramRendererFactory;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsIconHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsSmallHeadHologramRenderer;
+import eu.decentsoftware.holograms.nms.api.renderer.NmsTextDisplayHologramRenderer;
 import eu.decentsoftware.holograms.nms.api.renderer.NmsTextHologramRenderer;
 
 class HologramRendererFactory implements NmsHologramRendererFactory {
@@ -44,6 +45,11 @@ class HologramRendererFactory implements NmsHologramRendererFactory {
     @Override
     public NmsClickableHologramRenderer createClickableRenderer() {
         return new ClickableHologramRenderer(entityIdGenerator);
+    }
+
+    @Override
+    public NmsTextDisplayHologramRenderer createTextDisplayRenderer() {
+        return null; // TextDisplay not supported in 1.8
     }
 
 }
